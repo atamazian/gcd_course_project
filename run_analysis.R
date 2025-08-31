@@ -44,7 +44,7 @@ df$activity <- activitylabels$activity[match(df$activity, activitylabels$activit
 
 # prepare tidy data set
 tidydf <- as_tibble(df) %>% 
-    group_by(activity, subject) %>% 
+    group_by(subject, activity) %>% 
     summarise(across(contains(c("mean", "std")), mean, .names = "avg_{.col}"))
 
 # write tidy data set into a file
