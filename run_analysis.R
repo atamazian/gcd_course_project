@@ -1,51 +1,74 @@
 library(dplyr)
 
-# read features names
+# Read features names
 features <- read.table("./UCI HAR Dataset/features.txt")[, 2]
 
-# read data for the train set
-xtrain <- read.table(
+# Read the train data
+xTrain <- read.table(
     "./UCI HAR Dataset/train/X_train.txt", 
-    col.names=features, header=FALSE
+    col.names = features, header = FALSE
 )
-xtrain <- xtrain[ , grepl("mean|std", names(xtrain))]
-ytrain <- read.table(
+yTrain <- read.table(
     "./UCI HAR Dataset/train/y_train.txt",
-    col.names = "activity"
+    col.names = "activityID"
 )
-subject_train <- read.table(
+subjectTrain <- read.table(
     "./UCI HAR Dataset/train/subject_train.txt",
-    col.names="subject"
+    col.names = "subjectID"
 )
 
-# read data for the test set
-xtest <- read.table(
+# Read the test data
+xTest <- read.table(
     "./UCI HAR Dataset/test/X_test.txt", 
-    col.names=features, header=FALSE
+    col.names = features, header = FALSE
 )
-xtest <- xtest[ , grepl("mean|std", names(xtest))]
-ytest <- read.table(
+yTest <- read.table(
     "./UCI HAR Dataset/test/y_test.txt",
-    col.names = "activity"
+    col.names = "activityID"
 )
-subject_test <- read.table(
+subjectTest <- read.table(
     "./UCI HAR Dataset/test/subject_test.txt", 
-    col.names="subject"
+    col.names = "subjectID"
 )
 
-# merge train and test set into the one data set
-df <- rbind(cbind(xtrain, ytrain, subject_train), cbind(xtest, ytest, subject_test))
+# Merge the train and test data to one data set
+trainData <- cbind(subjectTrain, xTrain, yTrain)
+testData <- cbind(subjectTest, xTest, yTest)
+allData <- rbind(trainData, testData)
 
-# use descriptive activity names to name the activities in the data set 
-activitylabels <- read.table(
-    "./UCI HAR Dataset/activity_labels.txt", col.names = c("activitynum", "activity")
+# Leave only mean and std measurements
+selCol <- grepl("activityID|subjectID|mean|std", colnames(allData))
+finalData <- allData[, selCol]
+
+# Use descriptive activity names to name activities in the data set 
+activityLabels <- read.table(
+    "./UCI HAR Dataset/activity_labels.txt", 
+    col.names = c("activityID", "activityDesc")
 )
-df$activity <- activitylabels$activity[match(df$activity, activitylabels$activitynum)]
+finalData <- merge(
+    finalData, activityLabels, by = "activityID", all.x = TRUE
+)
 
-# prepare tidy data set
-tidydf <- as_tibble(df) %>% 
-    group_by(subject, activity) %>% 
-    summarise(across(contains(c("mean", "std")), mean, .names = "avg_{.col}"))
+# Use descriptive variable names to name variables in the data set
+replacements <- list(
+    "^t"       = "time",
+    "^f"       = "frequency",
+    "Acc"      = "Accelerometer",
+    "Gyro"     = "Gyroscope",
+    "Mag"      = "Magnitude",
+    "BodyBody" = "Body"
+)
+for (pattern in names(replacements)) {
+    colnames(finalData) <- gsub(
+        pattern,
+        replacements[[pattern]],
+        colnames(finalData)
+    )
+}
 
-# write tidy data set into a file
-write.table(tidydf, file="tidy.txt", row.names = FALSE)
+# Create a second, independent tidy data set and write it to the file
+tidyData <- finalData %>%
+    group_by(subjectID, activityID, activityDesc) %>%
+    summarize_all(mean)
+
+write.table(tidyData, "tidy_data.txt", row.names = FALSE)
