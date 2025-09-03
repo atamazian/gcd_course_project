@@ -1,4 +1,6 @@
 # Peer-graded Assignment: Getting and Cleaning Data Course Project
+Author: atamazian, 2025-09-03.
+
 ## Requirements
 One of the most exciting areas in all of data science right now is wearable computing - see for example [this article](http://www.insideactivitytracking.com/data-science-activity-tracking-and-the-battle-for-the-worlds-top-sports-brand/). The data linked to from the course website represent data collected from the accelerometers from the Samsung Galaxy S smartphone.
 

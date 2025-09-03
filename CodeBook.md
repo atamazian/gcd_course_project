@@ -1,4 +1,5 @@
 # Code Book
+Author: atamazian, 2025-09-03.
 
 ##  Source Data
 Raw data for this project can downloaded [from here](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip).
